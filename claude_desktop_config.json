@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+	  "database-toolbox": {
+      "command": "D:\\repos\\mcp-toolbox\\toolbox.exe",
+      "args": ["--tools-file", "D:\\repos\\mcp-toolbox\\toolsdb.yaml", "--stdio"],
+	  "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "D:\\repos\\mcp-toolbox\\complete-tube-421007-208a4862c992.json"
+
+             }
+    }
+}
+}
