@@ -1,3 +1,5 @@
+I'll update both README files with the corrected architecture diagrams. Here are the updated versions:
+
 # MCP Toolbox for BigQuery and Cloud Databases
 
 A comprehensive implementation of the Model Context Protocol (MCP) Toolbox for integrating Google BigQuery and other cloud databases with Claude Desktop and Google AI Development Kit (ADK). This repository demonstrates how to build database-powered AI agents using natural language interfaces.
@@ -39,18 +41,60 @@ The MCP Toolbox enables AI models to interact directly with databases through a 
 
 ## Architecture
 
+The MCP Toolbox supports two distinct use cases with separate architectures:
+
 ```
-┌─────────────────────┐      ┌──────────────────┐     ┌────────────────┐
-│   Claude Desktop    │────▶│   MCP Toolbox    │────▶│    BigQuery    │
-│   (MCP Client)      │◀────│   (MCP Server)   │◀────│   (Database)   │
-└─────────────────────┘      └──────────────────┘     └────────────────┘
-           │                          │                        │
-           │                          ▼                        │
-           │                 ┌──────────────────┐             │
-           └────────────────▶│   Google ADK     │◀────────────┘
-                             │   Agent Engine   │
-                             └──────────────────┘
+     Use Case 1: Claude Desktop Integration
+    ┌─────────────────────┐     
+    │   Claude Desktop    │
+    │   (MCP Client)      │
+    └──────────┬──────────┘
+               │ MCP Protocol (stdio)
+               ▼
+    ┌──────────────────────┐
+    │   MCP Toolbox        │
+    │   (MCP Server)       │
+    │  ./toolbox --stdio   │
+    └──────────┬───────────┘
+               │ 
+               ▼
+    ┌────────────────┐
+    │    BigQuery    │
+    │   (Database)   │
+    └────────────────┘
+
+     Use Case 2: Google ADK Agent Development
+    ┌─────────────────────┐     
+    │   Google ADK        │
+    │   Python Agent      │
+    └──────────┬──────────┘
+               │ HTTP/gRPC
+               ▼
+    ┌──────────────────────┐
+    │  ToolboxSyncClient   │
+    │  (Python Library)    │
+    └──────────┬───────────┘
+               │ HTTP API
+               ▼
+    ┌──────────────────────┐
+    │   MCP Toolbox        │
+    │   (HTTP Server)      │
+    │ ./toolbox --port=5000│
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌────────────────┐
+    │    BigQuery    │
+    │   (Database)   │
+    └────────────────┘
 ```
+
+**Key Points:**
+- Claude Desktop and Google ADK are completely separate, independent systems
+- Both can use MCP Toolbox but through different interfaces:
+  - Claude Desktop: Uses MCP protocol via stdio communication
+  - Google ADK: Uses HTTP/gRPC via the ToolboxSyncClient Python library
+- There is no direct connection between Claude Desktop and Google ADK
 
 ## Prerequisites
 
@@ -1013,3 +1057,15 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - [Anthropic](https://anthropic.com) for the Model Context Protocol specification
 - [Google AI Development Kit](https://ai.google.dev) for agent framework
 - MCP community for toolbox development and support
+
+## Support
+
+For issues and questions:
+- GitHub Issues: [Report bugs or request features](https://github.com/yourusername/mcp-toolbox/issues)
+- Discord: [MCP Community](https://discord.gg/anthropic-mcp)
+- Documentation: [Official MCP Docs](https://modelcontextprotocol.io)
+- Google Cloud Support: [BigQuery Documentation](https://cloud.google.com/bigquery/docs)
+
+---
+
+

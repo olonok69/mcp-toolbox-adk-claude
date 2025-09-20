@@ -24,6 +24,9 @@ Una implementación integral del Model Context Protocol (MCP) Toolbox para integ
 - [Solución de Problemas](#solución-de-problemas)
 - [Mejores Prácticas de Seguridad](#mejores-prácticas-de-seguridad)
 - [Ejemplos](#ejemplos)
+- [Configuración Avanzada](#configuración-avanzada)
+- [Monitoreo y Observabilidad](#monitoreo-y-observabilidad)
+- [Integración con CI/CD](#integración-con-cicd)
 - [Contribuyendo](#contribuyendo)
 - [Licencia](#licencia)
 
@@ -39,18 +42,60 @@ El MCP Toolbox permite a los modelos de IA interactuar directamente con bases de
 
 ## Arquitectura
 
+El MCP Toolbox soporta dos casos de uso distintos con arquitecturas separadas:
+
 ```
-┌─────────────────────┐     ┌──────────────────┐     ┌────────────────┐
-│   Claude Desktop    │────▶│   MCP Toolbox    │────▶│    BigQuery    │
-│   (Cliente MCP)     │◀────│   (Servidor MCP) │◀────│  (Base de Datos)│
-└─────────────────────┘     └──────────────────┘     └────────────────┘
-           │                          │                        │
-           │                          ▼                        │
-           │                 ┌──────────────────┐             │
-           └────────────────▶│   Google ADK     │◀────────────┘
-                             │   Motor de Agentes│
-                             └──────────────────┘
+     Caso de Uso 1: Integración con Claude Desktop
+    ┌─────────────────────┐     
+    │   Claude Desktop    │
+    │   (Cliente MCP)     │
+    └──────────┬──────────┘
+               │ Protocolo MCP (stdio)
+               ▼
+    ┌──────────────────────┐
+    │   MCP Toolbox        │
+    │   (Servidor MCP)     │
+    │  ./toolbox --stdio   │
+    └──────────┬───────────┘
+               │ 
+               ▼
+    ┌────────────────┐
+    │    BigQuery    │
+    │ (Base de Datos)│
+    └────────────────┘
+
+     Caso de Uso 2: Desarrollo de Agentes con Google ADK
+    ┌─────────────────────┐     
+    │   Google ADK        │
+    │   Agente Python     │
+    └──────────┬──────────┘
+               │ HTTP/gRPC
+               ▼
+    ┌──────────────────────┐
+    │  ToolboxSyncClient   │
+    │ (Librería Python)    │
+    └──────────┬───────────┘
+               │ API HTTP
+               ▼
+    ┌──────────────────────┐
+    │   MCP Toolbox        │
+    │  (Servidor HTTP)     │
+    │ ./toolbox --port=5000│
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌────────────────┐
+    │    BigQuery    │
+    │ (Base de Datos)│
+    └────────────────┘
 ```
+
+**Puntos Clave:**
+- Claude Desktop y Google ADK son sistemas completamente separados e independientes
+- Ambos pueden usar MCP Toolbox pero a través de diferentes interfaces:
+  - Claude Desktop: Usa el protocolo MCP vía comunicación stdio
+  - Google ADK: Usa HTTP/gRPC vía la librería Python ToolboxSyncClient
+- No hay conexión directa entre Claude Desktop y Google ADK
 
 ## Prerrequisitos
 
@@ -975,6 +1020,416 @@ tools:
       # y combinar resultados
 ```
 
+### Ejemplo 3: Análisis de Tendencias con Release Notes
+
+```python
+# Analizar tendencias en actualizaciones de GCP
+async def analizar_tendencias_gcp():
+    # Obtener release notes de los últimos 30 días
+    notas_recientes = await toolbox.execute_tool(
+        "search_release_notes_recent",
+        {"days_back": 30}
+    )
+    
+    # Agrupar por producto
+    productos = {}
+    for nota in notas_recientes:
+        producto = nota["product_name"]
+        if producto not in productos:
+            productos[producto] = []
+        productos[producto].append(nota)
+    
+    # Analizar frecuencia de actualizaciones
+    analisis = {
+        "total_actualizaciones": len(notas_recientes),
+        "productos_actualizados": len(productos),
+        "producto_mas_activo": max(productos, key=lambda k: len(productos[k])),
+        "tipos_cambios": {}
+    }
+    
+    # Contar tipos de cambios
+    for nota in notas_recientes:
+        tipo = nota.get("release_note_type", "General")
+        analisis["tipos_cambios"][tipo] = analisis["tipos_cambios"].get(tipo, 0) + 1
+    
+    return analisis
+```
+
+### Ejemplo 4: Dashboard Integrado
+
+```python
+# Dashboard para monitorear reservas y actualizaciones
+class MCPDashboard:
+    def __init__(self):
+        self.toolbox = ToolboxSyncClient("http://127.0.0.1:5000")
+        
+    async def obtener_metricas_hotel(self):
+        """Obtener métricas de ocupación de hoteles"""
+        # Buscar todos los hoteles
+        hoteles = await self.toolbox.execute_tool(
+            "search-available-hotels",
+            {}
+        )
+        
+        metricas = {
+            "hoteles_disponibles": len(hoteles),
+            "capacidad_total": sum(h["available_rooms"] for h in hoteles),
+            "precio_promedio": sum(h["price_per_night"] for h in hoteles) / len(hoteles),
+            "rating_promedio": sum(h["rating"] for h in hoteles) / len(hoteles)
+        }
+        
+        return metricas
+    
+    async def obtener_actualizaciones_relevantes(self):
+        """Obtener actualizaciones de productos GCP relevantes"""
+        productos_interes = ["BigQuery", "Cloud SQL", "Cloud Storage"]
+        actualizaciones = []
+        
+        for producto in productos_interes:
+            notas = await self.toolbox.execute_tool(
+                "search_release_notes_by_product",
+                {"product_name": producto}
+            )
+            actualizaciones.extend(notas[:3])  # Top 3 por producto
+        
+        return sorted(actualizaciones, 
+                     key=lambda x: x["published_at"], 
+                     reverse=True)
+    
+    async def generar_reporte(self):
+        """Generar reporte consolidado"""
+        metricas = await self.obtener_metricas_hotel()
+        actualizaciones = await self.obtener_actualizaciones_relevantes()
+        
+        reporte = f"""
+        === REPORTE DE DASHBOARD MCP ===
+        
+        MÉTRICAS DE HOTELES:
+        - Hoteles Disponibles: {metricas['hoteles_disponibles']}
+        - Capacidad Total: {metricas['capacidad_total']} habitaciones
+        - Precio Promedio: ${metricas['precio_promedio']:.2f}/noche
+        - Rating Promedio: {metricas['rating_promedio']:.1f}/5
+        
+        ACTUALIZACIONES RECIENTES DE GCP:
+        """
+        
+        for act in actualizaciones[:5]:
+            reporte += f"\n- [{act['product_name']}] {act['description'][:100]}..."
+        
+        return reporte
+```
+
+## Configuración Avanzada
+
+### Configuración de Múltiples Entornos
+
+```yaml
+# config/dev.yaml
+environments:
+  development:
+    sources:
+      bigquery-dev:
+        kind: bigquery
+        project: ${DEV_PROJECT_ID}
+        dataset: dev_test
+        
+# config/prod.yaml
+environments:
+  production:
+    sources:
+      bigquery-prod:
+        kind: bigquery
+        project: ${PROD_PROJECT_ID}
+        dataset: production
+        # Configuraciones de seguridad adicionales
+        use_private_ip: true
+        ssl_required: true
+```
+
+### Configuración de Cache
+
+```yaml
+# Configurar cache para optimizar rendimiento
+cache:
+  enabled: true
+  type: redis
+  config:
+    host: ${REDIS_HOST}
+    port: 6379
+    ttl: 3600  # 1 hora
+    max_entries: 1000
+    
+tools:
+  cached-search:
+    kind: bigquery-sql
+    source: my-bigquery-source
+    cache:
+      enabled: true
+      ttl: 1800  # 30 minutos
+    statement: |
+      SELECT * FROM `test.hotels` 
+      WHERE rating > 4.0
+```
+
+### Configuración de Webhooks
+
+```yaml
+# Configurar webhooks para notificaciones
+webhooks:
+  booking-notification:
+    url: ${WEBHOOK_URL}
+    events:
+      - hotel.booked
+      - hotel.cancelled
+    headers:
+      Authorization: Bearer ${WEBHOOK_TOKEN}
+    
+tools:
+  book-hotel-with-notification:
+    kind: bigquery-sql
+    source: my-bigquery-source
+    webhooks:
+      - booking-notification
+    statement: |
+      UPDATE `test.hotels` 
+      SET booked = TRUE
+      WHERE id = @hotel_id
+```
+
+## Monitoreo y Observabilidad
+
+### Configuración de Métricas
+
+```yaml
+# Configurar exportación de métricas
+metrics:
+  enabled: true
+  exporters:
+    - type: prometheus
+      endpoint: /metrics
+      port: 9090
+    - type: stackdriver
+      project_id: ${GOOGLE_CLOUD_PROJECT}
+      
+  custom_metrics:
+    - name: mcp_toolbox_queries_total
+      type: counter
+      description: Total de consultas ejecutadas
+    - name: mcp_toolbox_query_duration_seconds
+      type: histogram
+      description: Duración de las consultas
+```
+
+### Configuración de Logging Estructurado
+
+```python
+import logging
+import json
+from pythonjsonlogger import jsonlogger
+
+# Configurar logging estructurado
+logHandler = logging.StreamHandler()
+formatter = jsonlogger.JsonFormatter()
+logHandler.setFormatter(formatter)
+logger = logging.getLogger()
+logger.addHandler(logHandler)
+logger.setLevel(logging.INFO)
+
+# Ejemplo de uso
+logger.info("query_executed", extra={
+    "tool": "search-hotels-by-location",
+    "parameters": {"location": "Miami"},
+    "duration_ms": 150,
+    "results_count": 5
+})
+```
+
+### Dashboard de Monitoreo
+
+```python
+# dashboard_monitor.py
+import asyncio
+import time
+from datetime import datetime, timedelta
+
+class ToolboxMonitor:
+    def __init__(self):
+        self.metrics = {
+            "total_queries": 0,
+            "successful_queries": 0,
+            "failed_queries": 0,
+            "avg_response_time": 0,
+            "queries_by_tool": {}
+        }
+    
+    async def track_query(self, tool_name, parameters, duration, success):
+        """Rastrear métricas de consultas"""
+        self.metrics["total_queries"] += 1
+        
+        if success:
+            self.metrics["successful_queries"] += 1
+        else:
+            self.metrics["failed_queries"] += 1
+        
+        # Actualizar promedio de tiempo de respuesta
+        current_avg = self.metrics["avg_response_time"]
+        total = self.metrics["total_queries"]
+        self.metrics["avg_response_time"] = (
+            (current_avg * (total - 1) + duration) / total
+        )
+        
+        # Rastrear por herramienta
+        if tool_name not in self.metrics["queries_by_tool"]:
+            self.metrics["queries_by_tool"][tool_name] = 0
+        self.metrics["queries_by_tool"][tool_name] += 1
+    
+    def get_health_status(self):
+        """Obtener estado de salud del sistema"""
+        error_rate = (
+            self.metrics["failed_queries"] / self.metrics["total_queries"] 
+            if self.metrics["total_queries"] > 0 else 0
+        )
+        
+        if error_rate > 0.1:
+            status = "CRITICAL"
+        elif error_rate > 0.05:
+            status = "WARNING"
+        else:
+            status = "HEALTHY"
+        
+        return {
+            "status": status,
+            "error_rate": f"{error_rate * 100:.2f}%",
+            "avg_response_time_ms": f"{self.metrics['avg_response_time']:.2f}",
+            "total_queries": self.metrics["total_queries"]
+        }
+```
+
+## Integración con CI/CD
+
+### GitHub Actions Workflow
+
+```yaml
+# .github/workflows/mcp-toolbox-deploy.yml
+name: Deploy MCP Toolbox
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Google Cloud
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+      
+      - name: Test Toolbox Configuration
+        run: |
+          ./toolbox --tools-file="toolsdb.yaml" --validate
+          ./toolbox --tools-file="tools.yaml" --validate
+      
+      - name: Run Integration Tests
+        run: |
+          python -m pytest tests/integration/
+  
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy mcp-toolbox \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/mcp-toolbox:latest \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated
+```
+
+### Terraform Configuration
+
+```hcl
+# infrastructure/main.tf
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+# BigQuery Dataset
+resource "google_bigquery_dataset" "mcp_dataset" {
+  dataset_id                  = "mcp_toolbox"
+  friendly_name              = "MCP Toolbox Dataset"
+  description                = "Dataset para MCP Toolbox"
+  location                   = "US"
+  default_table_expiration_ms = 3600000
+
+  labels = {
+    env = "production"
+    app = "mcp-toolbox"
+  }
+}
+
+# Service Account
+resource "google_service_account" "mcp_sa" {
+  account_id   = "mcp-toolbox-sa"
+  display_name = "MCP Toolbox Service Account"
+}
+
+# IAM Bindings
+resource "google_project_iam_binding" "bigquery_user" {
+  project = var.project_id
+  role    = "roles/bigquery.user"
+
+  members = [
+    "serviceAccount:${google_service_account.mcp_sa.email}",
+  ]
+}
+
+# Cloud Run Service
+resource "google_cloud_run_service" "mcp_toolbox" {
+  name     = "mcp-toolbox"
+  location = var.region
+
+  template {
+    spec {
+      containers {
+        image = "gcr.io/${var.project_id}/mcp-toolbox:latest"
+        
+        env {
+          name  = "GOOGLE_CLOUD_PROJECT"
+          value = var.project_id
+        }
+        
+        resources {
+          limits = {
+            cpu    = "2000m"
+            memory = "2Gi"
+          }
+        }
+      }
+      
+      service_account_name = google_service_account.mcp_sa.email
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+}
+```
+
 ## Contribuyendo
 
 ¡Damos la bienvenida a las contribuciones! Por favor sigue estas pautas:
@@ -1001,7 +1456,17 @@ pytest tests/
 # Ejecutar linting
 black .
 flake8 .
+
+# Ejecutar pruebas de cobertura
+pytest --cov=mcp_toolbox tests/
 ```
+
+### Guía de Estilo de Código
+
+- **Python**: Seguir PEP 8
+- **YAML**: Usar 2 espacios para indentación
+- **SQL**: Usar MAYÚSCULAS para palabras clave
+- **Commits**: Usar mensajes descriptivos en español o inglés
 
 ## Licencia
 
@@ -1013,4 +1478,21 @@ Este proyecto está licenciado bajo Apache License 2.0 - ver el archivo [LICENSE
 - [Anthropic](https://anthropic.com) por la especificación del Model Context Protocol
 - [Google AI Development Kit](https://ai.google.dev) por el framework de agentes
 - Comunidad MCP por el desarrollo y soporte del toolbox
+
+## Soporte
+
+Para problemas y preguntas:
+- GitHub Issues: [Reportar bugs o solicitar características](https://github.com/tuusuario/mcp-toolbox/issues)
+- Discord: [Comunidad MCP](https://discord.gg/anthropic-mcp)
+- Documentación: [Docs Oficiales de MCP](https://modelcontextprotocol.io)
+- Soporte de Google Cloud: [Documentación de BigQuery](https://cloud.google.com/bigquery/docs)
+
+## Recursos Adicionales
+
+- [Codelab de MCP Toolbox con BigQuery](https://codelabs.developers.google.com/mcp-toolbox-bigquery-dataset)
+- [Guía de Inicio de GenAI Toolbox](https://googleapis.github.io/genai-toolbox/getting-started/)
+- [Documentación de Google ADK](https://google.github.io/adk-docs/mcp/)
+- [Ejemplos de MCP](https://github.com/modelcontextprotocol/examples)
+
+---
 
