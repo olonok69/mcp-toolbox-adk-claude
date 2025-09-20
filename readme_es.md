@@ -1,204 +1,204 @@
-# MCP Toolbox for BigQuery and Cloud Databases
+# MCP Toolbox para BigQuery y Bases de Datos en la Nube
 
-A comprehensive implementation of the Model Context Protocol (MCP) Toolbox for integrating Google BigQuery and other cloud databases with Claude Desktop and Google AI Development Kit (ADK). This repository demonstrates how to build database-powered AI agents using natural language interfaces.
+Una implementación integral del Model Context Protocol (MCP) Toolbox para integrar Google BigQuery y otras bases de datos en la nube con Claude Desktop y Google AI Development Kit (ADK). Este repositorio demuestra cómo construir agentes de IA potenciados por bases de datos usando interfaces de lenguaje natural.
 
-## Table of Contents
+## Tabla de Contenidos
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-  - [Windows Installation](#windows-installation)
-  - [Linux Installation](#linux-installation)
-  - [macOS Installation](#macos-installation)
-- [Google Cloud Setup](#google-cloud-setup)
-  - [Service Account Configuration](#service-account-configuration)
-  - [BigQuery Dataset Setup](#bigquery-dataset-setup)
-- [Configuration](#configuration)
-  - [Tool Definition Files](#tool-definition-files)
-  - [Environment Variables](#environment-variables)
-- [Claude Desktop Integration](#claude-desktop-integration)
-- [Google ADK Agent Development](#google-adk-agent-development)
-- [Running the Toolbox](#running-the-toolbox)
-- [Testing and Validation](#testing-and-validation)
-- [Troubleshooting](#troubleshooting)
-- [Security Best Practices](#security-best-practices)
-- [Examples](#examples)
-- [Contributing](#contributing)
-- [License](#license)
+- [Descripción General](#descripción-general)
+- [Arquitectura](#arquitectura)
+- [Prerrequisitos](#prerrequisitos)
+- [Instalación](#instalación)
+  - [Instalación en Windows](#instalación-en-windows)
+  - [Instalación en Linux](#instalación-en-linux)
+  - [Instalación en macOS](#instalación-en-macos)
+- [Configuración de Google Cloud](#configuración-de-google-cloud)
+  - [Configuración de Service Account](#configuración-de-service-account)
+  - [Configuración del Dataset de BigQuery](#configuración-del-dataset-de-bigquery)
+- [Configuración](#configuración)
+  - [Archivos de Definición de Herramientas](#archivos-de-definición-de-herramientas)
+  - [Variables de Entorno](#variables-de-entorno)
+- [Integración con Claude Desktop](#integración-con-claude-desktop)
+- [Desarrollo de Agentes con Google ADK](#desarrollo-de-agentes-con-google-adk)
+- [Ejecutando el Toolbox](#ejecutando-el-toolbox)
+- [Pruebas y Validación](#pruebas-y-validación)
+- [Solución de Problemas](#solución-de-problemas)
+- [Mejores Prácticas de Seguridad](#mejores-prácticas-de-seguridad)
+- [Ejemplos](#ejemplos)
+- [Contribuyendo](#contribuyendo)
+- [Licencia](#licencia)
 
-## Overview
+## Descripción General
 
-The MCP Toolbox enables AI models to interact directly with databases through a standardized protocol. This implementation focuses on Google BigQuery integration, providing:
+El MCP Toolbox permite a los modelos de IA interactuar directamente con bases de datos a través de un protocolo estandarizado. Esta implementación se enfoca en la integración con Google BigQuery, proporcionando:
 
-- **Natural Language Database Queries**: Convert user questions into SQL queries automatically
-- **Multi-Database Support**: Connect to BigQuery, Cloud SQL, AlloyDB, Spanner, and 20+ other databases
-- **Secure Authentication**: Service account and Application Default Credentials support
-- **Agent Development**: Build custom AI agents using Google's ADK framework
-- **Claude Desktop Integration**: Direct database access from Claude's desktop application
+- **Consultas a Bases de Datos en Lenguaje Natural**: Convierte preguntas de usuarios en consultas SQL automáticamente
+- **Soporte Multi-Base de Datos**: Conecta con BigQuery, Cloud SQL, AlloyDB, Spanner, y más de 20 otras bases de datos
+- **Autenticación Segura**: Soporte para service accounts y Application Default Credentials
+- **Desarrollo de Agentes**: Construye agentes de IA personalizados usando el framework ADK de Google
+- **Integración con Claude Desktop**: Acceso directo a bases de datos desde la aplicación de escritorio de Claude
 
-## Architecture
+## Arquitectura
 
 ```
-┌─────────────────────┐      ┌──────────────────┐     ┌────────────────┐
+┌─────────────────────┐     ┌──────────────────┐     ┌────────────────┐
 │   Claude Desktop    │────▶│   MCP Toolbox    │────▶│    BigQuery    │
-│   (MCP Client)      │◀────│   (MCP Server)   │◀────│   (Database)   │
-└─────────────────────┘      └──────────────────┘     └────────────────┘
+│   (Cliente MCP)     │◀────│   (Servidor MCP) │◀────│  (Base de Datos)│
+└─────────────────────┘     └──────────────────┘     └────────────────┘
            │                          │                        │
            │                          ▼                        │
            │                 ┌──────────────────┐             │
            └────────────────▶│   Google ADK     │◀────────────┘
-                             │   Agent Engine   │
+                             │   Motor de Agentes│
                              └──────────────────┘
 ```
 
-## Prerequisites
+## Prerrequisitos
 
-### System Requirements
+### Requisitos del Sistema
 
-- **Operating System**: Windows 10+, Ubuntu 20.04+, macOS 11+
-- **Memory**: Minimum 4GB RAM (8GB recommended)
-- **Disk Space**: 500MB for toolbox and dependencies
-- **Network**: Internet connection for cloud database access
+- **Sistema Operativo**: Windows 10+, Ubuntu 20.04+, macOS 11+
+- **Memoria**: Mínimo 4GB RAM (8GB recomendado)
+- **Espacio en Disco**: 500MB para toolbox y dependencias
+- **Red**: Conexión a internet para acceso a bases de datos en la nube
 
-### Software Dependencies
+### Dependencias de Software
 
-1. **Google Cloud SDK** (required for BigQuery access)
-2. **Claude Desktop** (for MCP client integration)
-3. **Python 3.8+** (for ADK agent development)
-4. **Git** (for repository management)
+1. **Google Cloud SDK** (requerido para acceso a BigQuery)
+2. **Claude Desktop** (para integración con cliente MCP)
+3. **Python 3.8+** (para desarrollo de agentes ADK)
+4. **Git** (para gestión del repositorio)
 
-### Google Cloud Requirements
+### Requisitos de Google Cloud
 
-- Active Google Cloud Project
-- BigQuery API enabled
-- Service account with appropriate permissions
-- Billing enabled for production use
+- Proyecto activo de Google Cloud
+- API de BigQuery habilitada
+- Service account con permisos apropiados
+- Facturación habilitada para uso en producción
 
-## Installation
+## Instalación
 
-### Windows Installation
+### Instalación en Windows
 
-#### 1. Install Google Cloud SDK
+#### 1. Instalar Google Cloud SDK
 
 ```powershell
-# Download the installer
+# Descargar el instalador
 Invoke-WebRequest -Uri https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe -OutFile GoogleCloudSDKInstaller.exe
 
-# Run the installer (follow GUI prompts)
+# Ejecutar el instalador (seguir las instrucciones en pantalla)
 .\GoogleCloudSDKInstaller.exe
 
-# Initialize gcloud
+# Inicializar gcloud
 gcloud init
 ```
 
-#### 2. Download MCP Toolbox Binary
+#### 2. Descargar el Binario de MCP Toolbox
 
 ```powershell
-# Set version
+# Establecer versión
 $VERSION = "0.15.0"
 
-# Download Windows binary
+# Descargar binario para Windows
 Invoke-WebRequest -Uri "https://storage.googleapis.com/genai-toolbox/v$VERSION/windows/amd64/toolbox.exe" -OutFile toolbox.exe
 
-# Verify installation
+# Verificar instalación
 .\toolbox.exe --version
 ```
 
-#### 3. Configure Environment Variables
+#### 3. Configurar Variables de Entorno
 
 ```powershell
-# Set Google Cloud credentials
+# Establecer credenciales de Google Cloud
 $env:GOOGLE_APPLICATION_CREDENTIALS = "D:\repos\mcp-toolbox\complete-tube-421007-208a4862c992.json"
 
-# Add to system environment variables (persistent)
+# Agregar a las variables de entorno del sistema (permanente)
 [System.Environment]::SetEnvironmentVariable('GOOGLE_APPLICATION_CREDENTIALS', 'D:\repos\mcp-toolbox\complete-tube-421007-208a4862c992.json', [System.EnvironmentVariableTarget]::User)
 ```
 
-### Linux Installation
+### Instalación en Linux
 
-#### 1. Install Google Cloud SDK
+#### 1. Instalar Google Cloud SDK
 
 ```bash
-# Add the Cloud SDK distribution URI as a package source
+# Agregar la URI de distribución del Cloud SDK como fuente de paquetes
 echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 
-# Import the Google Cloud public key
+# Importar la clave pública de Google Cloud
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 
-# Update and install the Cloud SDK
+# Actualizar e instalar el Cloud SDK
 sudo apt-get update && sudo apt-get install google-cloud-cli
 
-# Additional components
+# Componentes adicionales
 sudo apt-get install google-cloud-cli-app-engine-python
 sudo apt-get install google-cloud-cli-app-engine-python-extras
 
-# Initialize gcloud
+# Inicializar gcloud
 gcloud init
 ```
 
-#### 2. Download MCP Toolbox Binary
+#### 2. Descargar el Binario de MCP Toolbox
 
 ```bash
-# Set version
+# Establecer versión
 export VERSION=0.15.0
 
-# Download Linux binary
+# Descargar binario para Linux
 curl -O https://storage.googleapis.com/genai-toolbox/v$VERSION/linux/amd64/toolbox
 chmod +x toolbox
 
-# Move to system path (optional)
+# Mover a la ruta del sistema (opcional)
 sudo mv toolbox /usr/local/bin/
 
-# Verify installation
+# Verificar instalación
 toolbox --version
 ```
 
-#### 3. Configure Environment Variables
+#### 3. Configurar Variables de Entorno
 
 ```bash
-# Add to ~/.bashrc or ~/.zshrc
-export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account-key.json"
+# Agregar a ~/.bashrc o ~/.zshrc
+export GOOGLE_APPLICATION_CREDENTIALS="/ruta/a/tu/service-account-key.json"
 
-# Apply changes
+# Aplicar cambios
 source ~/.bashrc
 ```
 
-### macOS Installation
+### Instalación en macOS
 
 ```bash
-# Install via Homebrew (recommended)
+# Instalar vía Homebrew (recomendado)
 brew tap googleapis/toolbox
 brew install mcp-toolbox
 
-# Or download binary directly
+# O descargar binario directamente
 export VERSION=0.15.0
 
-# For Apple Silicon
+# Para Apple Silicon
 curl -O https://storage.googleapis.com/genai-toolbox/v$VERSION/darwin/arm64/toolbox
 
-# For Intel Macs
+# Para Intel Macs
 curl -O https://storage.googleapis.com/genai-toolbox/v$VERSION/darwin/amd64/toolbox
 
 chmod +x toolbox
 ```
 
-## Google Cloud Setup
+## Configuración de Google Cloud
 
-### Service Account Configuration
+### Configuración de Service Account
 
-#### 1. Create Service Account
+#### 1. Crear Service Account
 
 ```bash
-# Set your project ID
+# Establecer tu ID de proyecto
 export PROJECT_ID="complete-tube-421007"
 
-# Create service account
+# Crear service account
 gcloud iam service-accounts create mcp-toolbox-sa \
-    --display-name="MCP Toolbox Service Account" \
+    --display-name="Cuenta de Servicio MCP Toolbox" \
     --project=$PROJECT_ID
 
-# Grant BigQuery permissions
+# Otorgar permisos de BigQuery
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:mcp-toolbox-sa@$PROJECT_ID.iam.gserviceaccount.com" \
     --role="roles/bigquery.user"
@@ -208,30 +208,30 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --role="roles/bigquery.dataEditor"
 ```
 
-#### 2. Generate Service Account Key
+#### 2. Generar Clave de Service Account
 
 ```bash
-# Create and download key
+# Crear y descargar clave
 gcloud iam service-accounts keys create service-account-key.json \
     --iam-account=mcp-toolbox-sa@$PROJECT_ID.iam.gserviceaccount.com
 
-# Set environment variable
+# Establecer variable de entorno
 export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/service-account-key.json"
 ```
 
-### BigQuery Dataset Setup
+### Configuración del Dataset de BigQuery
 
-#### 1. Create Dataset and Table
+#### 1. Crear Dataset y Tabla
 
 ```sql
--- Create dataset
+-- Crear dataset
 CREATE SCHEMA IF NOT EXISTS `complete-tube-421007.test`
 OPTIONS(
   location="US",
-  description="Hotel booking system for MCP Toolbox demo"
+  description="Sistema de reservas de hotel para demo de MCP Toolbox"
 );
 
--- Create hotels table
+-- Crear tabla de hoteles
 CREATE OR REPLACE TABLE `complete-tube-421007.test.hotels` (
   id INT64 NOT NULL,
   name STRING NOT NULL,
@@ -247,39 +247,39 @@ CREATE OR REPLACE TABLE `complete-tube-421007.test.hotels` (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
 
--- Insert sample data
+-- Insertar datos de ejemplo
 INSERT INTO `complete-tube-421007.test.hotels` 
 (id, name, location, price_per_night, available_rooms, rating, amenities)
 VALUES
-  (1, 'Grand Plaza Hotel', 'New York', 250.00, 50, 4.5, ['WiFi', 'Pool', 'Gym']),
-  (2, 'Seaside Resort', 'Miami Beach', 180.00, 30, 4.2, ['Beach Access', 'Spa', 'Restaurant']),
-  (3, 'Mountain Lodge', 'Aspen', 350.00, 20, 4.8, ['Ski Access', 'Fireplace', 'Hot Tub']),
-  (4, 'City Center Inn', 'Chicago', 120.00, 40, 3.9, ['WiFi', 'Parking', 'Breakfast']),
-  (5, 'Luxury Suites', 'Las Vegas', 400.00, 25, 4.7, ['Casino', 'Pool', 'Entertainment']);
+  (1, 'Grand Plaza Hotel', 'Nueva York', 250.00, 50, 4.5, ['WiFi', 'Piscina', 'Gimnasio']),
+  (2, 'Seaside Resort', 'Miami Beach', 180.00, 30, 4.2, ['Acceso a Playa', 'Spa', 'Restaurante']),
+  (3, 'Mountain Lodge', 'Aspen', 350.00, 20, 4.8, ['Acceso a Esquí', 'Chimenea', 'Jacuzzi']),
+  (4, 'City Center Inn', 'Chicago', 120.00, 40, 3.9, ['WiFi', 'Estacionamiento', 'Desayuno']),
+  (5, 'Luxury Suites', 'Las Vegas', 400.00, 25, 4.7, ['Casino', 'Piscina', 'Entretenimiento']);
 ```
 
-## Configuration
+## Configuración
 
-### Tool Definition Files
+### Archivos de Definición de Herramientas
 
-#### toolsdb.yaml - Hotel Booking System
+#### toolsdb.yaml - Sistema de Reservas de Hotel
 
 ```yaml
 sources:
   my-bigquery-source:
     kind: bigquery
     project: complete-tube-421007
-    location: US  # Match your dataset location
+    location: US  # Debe coincidir con la ubicación de tu dataset
     
 tools:
   search-hotels-by-name:
     kind: bigquery-sql
     source: my-bigquery-source
-    description: Search for hotels by name with partial matching
+    description: Buscar hoteles por nombre con coincidencia parcial
     parameters:
       - name: name
         type: string
-        description: Hotel name or partial name
+        description: Nombre del hotel o nombre parcial
         required: true
     statement: |
       SELECT 
@@ -298,11 +298,11 @@ tools:
   search-hotels-by-location:
     kind: bigquery-sql
     source: my-bigquery-source
-    description: Find hotels in a specific location
+    description: Encontrar hoteles en una ubicación específica
     parameters:
       - name: location
         type: string
-        description: City or area name
+        description: Ciudad o nombre del área
         required: true
     statement: |
       SELECT 
@@ -320,7 +320,7 @@ tools:
   search-available-hotels:
     kind: bigquery-sql
     source: my-bigquery-source
-    description: Get all available (not booked) hotels
+    description: Obtener todos los hoteles disponibles (no reservados)
     statement: |
       SELECT 
         id,
@@ -337,19 +337,19 @@ tools:
   book-hotel:
     kind: bigquery-sql
     source: my-bigquery-source
-    description: Book a hotel room by ID
+    description: Reservar una habitación de hotel por ID
     parameters:
       - name: hotel_id
         type: integer
-        description: Unique hotel identifier
+        description: Identificador único del hotel
         required: true
       - name: checkin_date
         type: string
-        description: Check-in date (YYYY-MM-DD)
+        description: Fecha de check-in (AAAA-MM-DD)
         required: true
       - name: checkout_date
         type: string
-        description: Check-out date (YYYY-MM-DD)
+        description: Fecha de check-out (AAAA-MM-DD)
         required: true
     statement: |
       UPDATE `test.hotels` 
@@ -363,11 +363,11 @@ tools:
   cancel-booking:
     kind: bigquery-sql
     source: my-bigquery-source
-    description: Cancel a hotel booking
+    description: Cancelar una reserva de hotel
     parameters:
       - name: hotel_id
         type: integer
-        description: Hotel ID to cancel
+        description: ID del hotel a cancelar
         required: true
     statement: |
       UPDATE `test.hotels` 
@@ -381,11 +381,11 @@ tools:
   get-booking-details:
     kind: bigquery-sql
     source: my-bigquery-source
-    description: Get current booking information
+    description: Obtener información de la reserva actual
     parameters:
       - name: hotel_id
         type: integer
-        description: Hotel ID
+        description: ID del hotel
         required: true
     statement: |
       SELECT 
@@ -410,7 +410,7 @@ toolsets:
     - get-booking-details
 ```
 
-#### tools.yaml - Release Notes System
+#### tools.yaml - Sistema de Release Notes
 
 ```yaml
 sources:
@@ -422,11 +422,11 @@ tools:
   search_release_notes_recent:
     kind: bigquery-sql
     source: gcp-public-data
-    description: Get recent Google Cloud release notes from the last N days
+    description: Obtener release notes recientes de Google Cloud de los últimos N días
     parameters:
       - name: days_back
         type: integer
-        description: Number of days to look back
+        description: Número de días hacia atrás para buscar
         default: 7
     statement: |
       SELECT
@@ -445,11 +445,11 @@ tools:
   search_release_notes_by_product:
     kind: bigquery-sql
     source: gcp-public-data
-    description: Search release notes for a specific GCP product
+    description: Buscar release notes para un producto específico de GCP
     parameters:
       - name: product_name
         type: string
-        description: GCP product name (e.g., 'BigQuery', 'Cloud Storage')
+        description: Nombre del producto GCP (ej., 'BigQuery', 'Cloud Storage')
         required: true
     statement: |
       SELECT
@@ -471,37 +471,37 @@ toolsets:
     - search_release_notes_by_product
 ```
 
-### Environment Variables
+### Variables de Entorno
 
-Create a `.env` file (add to `.gitignore`):
+Crear un archivo `.env` (agregar a `.gitignore`):
 
 ```bash
-# Google Cloud Configuration
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
+# Configuración de Google Cloud
+GOOGLE_APPLICATION_CREDENTIALS=/ruta/a/service-account-key.json
 GOOGLE_CLOUD_PROJECT=complete-tube-421007
 BIGQUERY_DATASET=test
 BIGQUERY_LOCATION=US
 
-# MCP Toolbox Configuration
+# Configuración de MCP Toolbox
 TOOLBOX_PORT=5000
 TOOLBOX_HOST=127.0.0.1
 TOOLBOX_LOG_LEVEL=info
 
-# Optional: Proxy settings
+# Opcional: Configuración de proxy
 HTTP_PROXY=
 HTTPS_PROXY=
 NO_PROXY=localhost,127.0.0.1
 ```
 
-## Claude Desktop Integration
+## Integración con Claude Desktop
 
-### Configuration File Location
+### Ubicación del Archivo de Configuración
 
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
-### Complete Configuration
+### Configuración Completa
 
 ```json
 {
@@ -533,26 +533,26 @@ NO_PROXY=localhost,127.0.0.1
 }
 ```
 
-### Verifying Integration
+### Verificando la Integración
 
-1. **Restart Claude Desktop** completely (quit and reopen)
-2. Look for the **hammer icon (🔨)** in the chat interface
-3. Click the hammer to see available tools
-4. Test with: "Search for hotels in New York"
+1. **Reiniciar Claude Desktop** completamente (cerrar y volver a abrir)
+2. Buscar el **icono de martillo (🔨)** en la interfaz de chat
+3. Hacer clic en el martillo para ver las herramientas disponibles
+4. Probar con: "Buscar hoteles en Nueva York"
 
-## Google ADK Agent Development
+## Desarrollo de Agentes con Google ADK
 
-### Installing ADK
+### Instalando ADK
 
 ```bash
-# Install Google ADK
+# Instalar Google ADK
 pip install google-adk google-genai-toolbox
 
-# Install toolbox client
+# Instalar cliente de toolbox
 pip install toolbox-core
 ```
 
-### Hotel Booking Agent
+### Agente de Reservas de Hotel
 
 **gcp-hotel-agent/agent.py**:
 
@@ -561,29 +561,29 @@ from google.adk.agents.llm_agent import Agent
 from toolbox_core import ToolboxSyncClient
 import os
 
-# Initialize toolbox client
+# Inicializar cliente de toolbox
 toolbox = ToolboxSyncClient("http://127.0.0.1:5000")
 
-# Load tools from configuration
+# Cargar herramientas desde la configuración
 tools = toolbox.load_toolset('hotel-management')
 
-# Configure the agent
+# Configurar el agente
 root_agent = Agent(
-    name="hotel_booking_assistant",
+    name="asistente_reservas_hotel",
     model="gemini-2.0-flash",
-    description="AI assistant for hotel search and booking",
+    description="Asistente de IA para búsqueda y reserva de hoteles",
     instruction="""
-    You are a helpful hotel booking assistant with access to a database of hotels.
-    You can:
-    1. Search for hotels by name or location
-    2. Show available hotels
-    3. Make bookings with check-in/check-out dates
-    4. Cancel existing bookings
-    5. Provide booking details and calculate costs
+    Eres un asistente útil de reservas de hotel con acceso a una base de datos de hoteles.
+    Puedes:
+    1. Buscar hoteles por nombre o ubicación
+    2. Mostrar hoteles disponibles
+    3. Hacer reservas con fechas de check-in/check-out
+    4. Cancelar reservas existentes
+    5. Proporcionar detalles de reserva y calcular costos
     
-    Always confirm booking details before making a reservation.
-    Calculate total costs when showing booking information.
-    Be helpful and suggest alternatives if requested hotels are unavailable.
+    Siempre confirma los detalles de la reserva antes de hacer una reservación.
+    Calcula los costos totales al mostrar información de reserva.
+    Sé útil y sugiere alternativas si los hoteles solicitados no están disponibles.
     """,
     tools=tools,
     temperature=0.7,
@@ -591,7 +591,7 @@ root_agent = Agent(
 )
 ```
 
-### Release Notes Agent
+### Agente de Release Notes
 
 **gcp-releasenotes-agent-app/agent.py**:
 
@@ -600,65 +600,65 @@ from google.adk.agents.llm_agent import Agent
 from toolbox_core import ToolboxSyncClient
 import logging
 
-# Setup logging
+# Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize connection
+# Inicializar conexión
 toolbox = ToolboxSyncClient("http://127.0.0.1:5000")
 
-# Load release notes tools
+# Cargar herramientas de release notes
 tools = toolbox.load_toolset('release_notes_tools')
 
 root_agent = Agent(
-    name="gcp_release_notes_analyst",
+    name="analista_release_notes_gcp",
     model="gemini-2.0-flash",
-    description="Expert on Google Cloud Platform release notes and updates",
+    description="Experto en release notes y actualizaciones de Google Cloud Platform",
     instruction="""
-    You are an expert analyst for Google Cloud Platform release notes.
-    Your role is to:
-    1. Provide information about recent GCP product updates
-    2. Search for specific product release notes
-    3. Summarize important changes and new features
-    4. Help users understand the impact of updates
+    Eres un analista experto en release notes de Google Cloud Platform.
+    Tu rol es:
+    1. Proporcionar información sobre actualizaciones recientes de productos GCP
+    2. Buscar release notes de productos específicos
+    3. Resumir cambios importantes y nuevas características
+    4. Ayudar a los usuarios a entender el impacto de las actualizaciones
     
-    When presenting release notes:
-    - Group by product when showing multiple updates
-    - Highlight breaking changes or deprecations
-    - Mention the release date for context
-    - Explain technical terms in simple language when needed
+    Al presentar release notes:
+    - Agrupa por producto cuando muestres múltiples actualizaciones
+    - Resalta cambios que rompen compatibilidad o deprecaciones
+    - Menciona la fecha de lanzamiento para contexto
+    - Explica términos técnicos en lenguaje simple cuando sea necesario
     """,
     tools=tools,
     response_format="markdown"
 )
 ```
 
-## Running the Toolbox
+## Ejecutando el Toolbox
 
-### Standalone Mode
+### Modo Standalone
 
 ```bash
-# Run with specific tools file
+# Ejecutar con archivo de herramientas específico
 ./toolbox --tools-file="toolsdb.yaml"
 
-# Run as HTTP server
+# Ejecutar como servidor HTTP
 ./toolbox --tools-file="toolsdb.yaml" --port=5000
 
-# Run with verbose logging
+# Ejecutar con logging detallado
 ./toolbox --tools-file="toolsdb.yaml" --log-level=debug
 
-# Run with multiple tool files
+# Ejecutar con múltiples archivos de herramientas
 ./toolbox --tools-file="toolsdb.yaml,tools.yaml"
 ```
 
-### STDIO Mode (for Claude Desktop)
+### Modo STDIO (para Claude Desktop)
 
 ```bash
-# Required for MCP protocol communication
+# Requerido para comunicación con protocolo MCP
 ./toolbox --tools-file="toolsdb.yaml" --stdio
 ```
 
-### Docker Deployment
+### Despliegue con Docker
 
 ```dockerfile
 # Dockerfile
@@ -682,7 +682,7 @@ EXPOSE 5000
 CMD ["./toolbox", "--tools-file=toolsdb.yaml", "--port=5000"]
 ```
 
-Build and run:
+Construir y ejecutar:
 
 ```bash
 docker build -t mcp-toolbox .
@@ -691,43 +691,43 @@ docker run -p 5000:5000 \
   mcp-toolbox
 ```
 
-## Testing and Validation
+## Pruebas y Validación
 
-### Manual Testing
+### Pruebas Manuales
 
 ```bash
-# Test tool configuration
+# Probar configuración de herramientas
 ./toolbox --tools-file="toolsdb.yaml" --validate
 
-# Test specific tool
+# Probar herramienta específica
 ./toolbox --tools-file="toolsdb.yaml" --test-tool="search-hotels-by-name" --param="name=Plaza"
 
-# Interactive testing
+# Pruebas interactivas
 ./toolbox --tools-file="toolsdb.yaml" --interactive
 ```
 
-### Using MCP Inspector
+### Usando MCP Inspector
 
 ```bash
-# Install MCP Inspector
+# Instalar MCP Inspector
 npm install -g @modelcontextprotocol/inspector
 
-# Run inspector
+# Ejecutar inspector
 mcp-inspector ./toolbox --tools-file="toolsdb.yaml" --stdio
 ```
 
-### Python Test Script
+### Script de Prueba en Python
 
 ```python
 import requests
 import json
 
-# Test toolbox server
-def test_hotel_search():
+# Probar servidor de toolbox
+def probar_busqueda_hotel():
     url = "http://localhost:5000/tools/search-hotels-by-location"
     payload = {
         "parameters": {
-            "location": "New York"
+            "location": "Nueva York"
         }
     }
     
@@ -735,64 +735,64 @@ def test_hotel_search():
     assert response.status_code == 200
     
     data = response.json()
-    print(f"Found {len(data['results'])} hotels in New York")
+    print(f"Encontrados {len(data['results'])} hoteles en Nueva York")
     return data
 
-# Run test
+# Ejecutar prueba
 if __name__ == "__main__":
-    results = test_hotel_search()
-    for hotel in results['results']:
-        print(f"- {hotel['name']}: ${hotel['price_per_night']}/night")
+    resultados = probar_busqueda_hotel()
+    for hotel in resultados['results']:
+        print(f"- {hotel['name']}: ${hotel['price_per_night']}/noche")
 ```
 
-## Troubleshooting
+## Solución de Problemas
 
-### Common Issues and Solutions
+### Problemas Comunes y Soluciones
 
-#### 1. Claude Desktop Not Detecting MCP Server
+#### 1. Claude Desktop No Detecta el Servidor MCP
 
-**Symptoms**: No hammer icon appears in Claude interface
+**Síntomas**: No aparece el icono de martillo en la interfaz de Claude
 
-**Solutions**:
+**Soluciones**:
 ```bash
-# Verify JSON syntax
+# Verificar sintaxis JSON
 python -m json.tool < claude_desktop_config.json
 
-# Check absolute paths
+# Verificar rutas absolutas
 realpath toolbox.exe
 realpath toolsdb.yaml
 
-# Test toolbox manually
+# Probar toolbox manualmente
 ./toolbox --tools-file="toolsdb.yaml" --stdio
 
-# Check Claude logs (Windows)
+# Revisar logs de Claude (Windows)
 type %APPDATA%\Claude\logs\mcp.log
 ```
 
-#### 2. Authentication Failures
+#### 2. Fallos de Autenticación
 
-**Error**: "Could not find default credentials"
+**Error**: "No se pudieron encontrar credenciales predeterminadas"
 
-**Solutions**:
+**Soluciones**:
 ```bash
-# Verify service account key
+# Verificar clave de service account
 gcloud auth activate-service-account --key-file=service-account-key.json
 
-# Test authentication
+# Probar autenticación
 gcloud auth application-default print-access-token
 
-# Set credentials explicitly
+# Establecer credenciales explícitamente
 export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/service-account-key.json"
 gcloud config set project complete-tube-421007
 ```
 
-#### 3. BigQuery Permission Errors
+#### 3. Errores de Permisos en BigQuery
 
-**Error**: "Permission denied on table"
+**Error**: "Permiso denegado en la tabla"
 
-**Solutions**:
+**Soluciones**:
 ```sql
--- Grant necessary permissions
+-- Otorgar permisos necesarios
 GRANT `roles/bigquery.dataViewer` ON SCHEMA `test` 
 TO "serviceAccount:mcp-toolbox-sa@complete-tube-421007.iam.gserviceaccount.com";
 
@@ -800,87 +800,87 @@ GRANT `roles/bigquery.dataEditor` ON TABLE `test.hotels`
 TO "serviceAccount:mcp-toolbox-sa@complete-tube-421007.iam.gserviceaccount.com";
 ```
 
-#### 4. Connection Timeouts
+#### 4. Timeouts de Conexión
 
 **Error**: "Context deadline exceeded"
 
-**Solutions**:
+**Soluciones**:
 ```yaml
-# Increase timeout in tools configuration
+# Aumentar timeout en configuración de herramientas
 sources:
   my-bigquery-source:
     kind: bigquery
     project: complete-tube-421007
-    timeout: 30s  # Increase timeout
+    timeout: 30s  # Aumentar timeout
     max_retries: 3
     retry_delay: 2s
 ```
 
-#### 5. Parameter Serialization Issues
+#### 5. Problemas de Serialización de Parámetros
 
-**Known Bug**: Only first parameter-based MCP call succeeds ([Issue #4192](https://github.com/anthropics/claude-desktop/issues/4192))
+**Bug Conocido**: Solo la primera llamada MCP con parámetros tiene éxito ([Issue #4192](https://github.com/anthropics/claude-desktop/issues/4192))
 
-**Workaround**:
+**Solución Temporal**:
 ```yaml
-# Use named parameters consistently
+# Usar parámetros nombrados consistentemente
 parameters:
   - name: hotel_id
     type: integer
-    description: Hotel ID
-    required: true  # Mark required parameters
+    description: ID del hotel
+    required: true  # Marcar parámetros requeridos
 ```
 
-### Debug Mode
+### Modo Debug
 
-Enable detailed logging:
+Habilitar logging detallado:
 
 ```bash
-# Set environment variables
+# Establecer variables de entorno
 export TOOLBOX_LOG_LEVEL=debug
 export GOOGLE_CLOUD_ENABLE_LOGGING=true
 
-# Run with debug output
+# Ejecutar con salida de debug
 ./toolbox --tools-file="toolsdb.yaml" --log-level=debug --verbose 2>&1 | tee debug.log
 ```
 
-## Security Best Practices
+## Mejores Prácticas de Seguridad
 
-### 1. Service Account Management
+### 1. Gestión de Service Accounts
 
 ```bash
-# Use least privilege principle
+# Usar principio de menor privilegio
 gcloud iam roles create mcp_toolbox_role \
     --project=complete-tube-421007 \
-    --title="MCP Toolbox Custom Role" \
+    --title="Rol Personalizado MCP Toolbox" \
     --permissions=bigquery.tables.getData,bigquery.tables.update
 
-# Rotate keys regularly
-gcloud iam service-accounts keys create new-key.json \
+# Rotar claves regularmente
+gcloud iam service-accounts keys create nueva-clave.json \
     --iam-account=mcp-toolbox-sa@complete-tube-421007.iam.gserviceaccount.com
 
-# Delete old keys
+# Eliminar claves antiguas
 gcloud iam service-accounts keys delete KEY_ID \
     --iam-account=mcp-toolbox-sa@complete-tube-421007.iam.gserviceaccount.com
 ```
 
-### 2. Secure Configuration Storage
+### 2. Almacenamiento Seguro de Configuración
 
 ```bash
-# Encrypt sensitive files
+# Encriptar archivos sensibles
 openssl enc -aes-256-cbc -salt -in service-account-key.json -out service-account-key.enc
 
-# Use secrets management
+# Usar gestión de secretos
 gcloud secrets create mcp-service-account \
     --data-file=service-account-key.json
 
-# Access in application
+# Acceder en la aplicación
 gcloud secrets versions access latest --secret=mcp-service-account
 ```
 
-### 3. Network Security
+### 3. Seguridad de Red
 
 ```yaml
-# Configure VPC Service Controls
+# Configurar VPC Service Controls
 sources:
   secure-bigquery:
     kind: bigquery
@@ -890,17 +890,17 @@ sources:
     private_ip: true
 ```
 
-### 4. Audit Logging
+### 4. Logging de Auditoría
 
 ```sql
--- Enable BigQuery audit logs
+-- Habilitar logs de auditoría de BigQuery
 CREATE OR REPLACE TABLE `audit.mcp_toolbox_logs` AS
 SELECT
   timestamp,
-  protoPayload.authenticationInfo.principalEmail as user_email,
-  protoPayload.methodName as operation,
-  protoPayload.resourceName as resource,
-  protoPayload.request as request_details
+  protoPayload.authenticationInfo.principalEmail as email_usuario,
+  protoPayload.methodName as operacion,
+  protoPayload.resourceName as recurso,
+  protoPayload.request as detalles_solicitud
 FROM
   `complete-tube-421007.cloud_audit_logs.data_access`
 WHERE
@@ -908,49 +908,49 @@ WHERE
   AND protoPayload.authenticationInfo.principalEmail LIKE '%mcp-toolbox%';
 ```
 
-## Examples
+## Ejemplos
 
-### Example 1: Hotel Search and Booking Flow
+### Ejemplo 1: Flujo de Búsqueda y Reserva de Hotel
 
 ```python
-# Complete booking workflow
-async def book_hotel_workflow():
-    # Search for hotels
-    hotels = await toolbox.execute_tool(
+# Flujo de trabajo completo de reserva
+async def flujo_reserva_hotel():
+    # Buscar hoteles
+    hoteles = await toolbox.execute_tool(
         "search-hotels-by-location",
         {"location": "Miami Beach"}
     )
     
-    # Select a hotel
-    selected_hotel = hotels[0]
+    # Seleccionar un hotel
+    hotel_seleccionado = hoteles[0]
     
-    # Make booking
-    booking_result = await toolbox.execute_tool(
+    # Hacer reserva
+    resultado_reserva = await toolbox.execute_tool(
         "book-hotel",
         {
-            "hotel_id": selected_hotel["id"],
+            "hotel_id": hotel_seleccionado["id"],
             "checkin_date": "2024-12-25",
             "checkout_date": "2024-12-30"
         }
     )
     
-    # Get confirmation
-    details = await toolbox.execute_tool(
+    # Obtener confirmación
+    detalles = await toolbox.execute_tool(
         "get-booking-details",
-        {"hotel_id": selected_hotel["id"]}
+        {"hotel_id": hotel_seleccionado["id"]}
     )
     
-    return details
+    return detalles
 ```
 
-### Example 2: Multi-Database Query
+### Ejemplo 2: Consulta Multi-Base de Datos
 
 ```yaml
-# Advanced multi-source configuration
+# Configuración avanzada multi-fuente
 sources:
   bigquery-prod:
     kind: bigquery
-    project: production-project
+    project: proyecto-produccion
     
   cloudsql-analytics:
     kind: postgres
@@ -963,53 +963,54 @@ sources:
     database: cache
 
 tools:
-  combined-search:
+  busqueda-combinada:
     kind: custom
     sources: 
       - bigquery-prod
       - cloudsql-analytics
       - firestore-cache
-    description: Search across all data sources
+    description: Buscar en todas las fuentes de datos
     implementation: |
-      # Custom logic to query multiple sources
-      # and combine results
+      # Lógica personalizada para consultar múltiples fuentes
+      # y combinar resultados
 ```
 
-## Contributing
+## Contribuyendo
 
-We welcome contributions! Please follow these guidelines:
+¡Damos la bienvenida a las contribuciones! Por favor sigue estas pautas:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Haz fork del repositorio
+2. Crea una rama de feature (`git checkout -b feature/caracteristica-increible`)
+3. Confirma tus cambios (`git commit -m 'Agregar característica increíble'`)
+4. Empuja a la rama (`git push origin feature/caracteristica-increible`)
+5. Abre un Pull Request
 
-### Development Setup
+### Configuración de Desarrollo
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/mcp-toolbox.git
+# Clonar repositorio
+git clone https://github.com/tuusuario/mcp-toolbox.git
 cd mcp-toolbox
 
-# Install development dependencies
+# Instalar dependencias de desarrollo
 pip install -r requirements-dev.txt
 
-# Run tests
+# Ejecutar pruebas
 pytest tests/
 
-# Run linting
+# Ejecutar linting
 black .
 flake8 .
 ```
 
-## License
+## Licencia
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+Este proyecto está licenciado bajo Apache License 2.0 - ver el archivo [LICENSE](LICENSE) para más detalles.
 
-## Acknowledgments
+## Reconocimientos
 
-- [Google Cloud Platform](https://cloud.google.com) for BigQuery and cloud services
-- [Anthropic](https://anthropic.com) for the Model Context Protocol specification
-- [Google AI Development Kit](https://ai.google.dev) for agent framework
-- MCP community for toolbox development and support
+- [Google Cloud Platform](https://cloud.google.com) por BigQuery y servicios en la nube
+- [Anthropic](https://anthropic.com) por la especificación del Model Context Protocol
+- [Google AI Development Kit](https://ai.google.dev) por el framework de agentes
+- Comunidad MCP por el desarrollo y soporte del toolbox
+
