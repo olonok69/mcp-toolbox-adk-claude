@@ -2,7 +2,11 @@ sources:
   my-bigquery-source:
     kind: bigquery
     project: complete-tube-421007
-    location: eubook
+    location: eu
+  my-bq-source:
+    kind: bigquery
+    project: complete-tube-421007
+    location: us
 tools:
   search-hotels-by-name:
     kind: bigquery-sql
@@ -58,6 +62,24 @@ tools:
         type: integer
         description: The ID of the hotel to cancel.
     statement: UPDATE `test.hotels` SET booked = FALSE WHERE id = @hotel_id;
+  search_release_notes_bq:
+    kind: bigquery-sql
+    source: my-bq-source
+    parameters:
+      - name: days_ago
+        description: Number of days ago to look back for release notes.
+        type: integer
+    statement: |
+      SELECT
+      product_name,description,published_at
+      FROM
+        `bigquery-public-data`.`google_cloud_release_notes`.`release_notes`
+      WHERE
+      DATE(published_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL @days_ago DAY)
+      GROUP BY product_name,description,published_at
+      ORDER BY published_at DESC
+    description: |
+      Use this tool to get information on Google Cloud Release Notes.
 toolsets:
   my-toolset:
     - search-hotels-by-name
@@ -65,3 +87,5 @@ toolsets:
     - book-hotel
     - update-hotel
     - cancel-hotel
+  my_bq_toolset:
+    - search_release_notes_bq
