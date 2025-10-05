@@ -3,3 +3,4 @@ toolbox*
 .venv
 complete-tube-421007-208a4862c992.json
 *.pyc
+__pycache__/
